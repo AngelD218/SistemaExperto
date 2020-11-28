@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace SistemaExperto
@@ -7,6 +8,7 @@ namespace SistemaExperto
     public class BCObject
     {
         public string Value { get; set; }
+        public string Description { get; set; }
         public List<string> Props { get; set; }
     }
 
@@ -21,6 +23,8 @@ namespace SistemaExperto
             int option = 0;
             Program program = new Program();
 
+            program.ReadCSVFile();
+
             while (option >= 1 || option <= 5)
             {
                 option = program.ShowMenu();
@@ -28,8 +32,8 @@ namespace SistemaExperto
                 switch (option)
                 {
                     case 1:
-                        Console.WriteLine("Guardar Objetos");
-                        program.CreateNewObject();
+                        Console.WriteLine("Mostrar Objetos\n\n");
+                        program.ShowAllObjects();
                         break;
                     case 2:
                         Console.WriteLine("Consultar al SE");
@@ -56,41 +60,83 @@ namespace SistemaExperto
         {
             Console.Clear();
             Console.WriteLine("Sistema Experto");
-            Console.WriteLine(" \n 1.Introducir Objetos a la BC \n 2.Consultar al SE \n 3.Guardar la BC \n 4.Usar una BC existente \n 5.Salir ");
+            Console.WriteLine(" \n 1.Ver Objetos de la BC \n 2.Consultar al SE \n 3.Guardar la BC \n 4.Usar una BC existente \n 5.Salir ");
             int option = Convert.ToInt32(Console.ReadLine());
             return option;
         }
-
-        public int CreateNewObject()
+        
+        public void ReadCSVFile()
         {
-            string objectValue = "";
-            while (objectValue != "0")
+            try
             {
-                BCObject newObject = new BCObject();
-                Console.WriteLine("Introduce el nombre del objeto (0 para salir)");
-                objectValue = Console.ReadLine().ToLower();
-                newObject.Value = objectValue;
-                if (newObject.Value == "0"){
-                    return 0;
-                }
-
-                newObject.Props = new List<string>();
-                Console.WriteLine("Introduce los atributos (0 para salir)");
-                string prop = "";
-                while (prop != "0")
+                using (StreamReader sr = new StreamReader("H:/BaseDeConocimientos.csv"))
                 {
-                    Console.Write(" : ");
-                    prop = Console.ReadLine().ToLower();
-                    if(prop != "0" && prop != "") {
+                    string currentLine;
+                    // currentLine will be null when the StreamReader reaches the end of file
+                    while ((currentLine = sr.ReadLine()) != null)
+                    {
+                        string[] line = currentLine.Split(',');
+                        CreateNewObject(line);
+                        Console.WriteLine(line[0]);
+                    }
+                }
+                Console.WriteLine("Ya esta");
+            }catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+        }
+
+        public int CreateNewObject(string[] currentObject)
+        {
+            int cont = 0;
+            BCObject newObject = new BCObject();
+            newObject.Props = new List<string>();
+
+            foreach (string prop in currentObject)
+            {
+                if (cont == 0)
+                {
+                    newObject.Value = prop;
+                }
+                else if(cont == 1)
+                {
+                    newObject.Description = prop;
+                }
+                else
+                {
+                    if(prop != "")
+                    {
                         newObject.Props.Add(prop);
                     }
                 }
-                this.BcObjects.Add(newObject);
+                cont++;
             }
+
+            this.BcObjects.Add(newObject);
 
             return 1;
         }
-        
+
+        public void ShowAllObjects()
+        {
+            foreach(BCObject obj in this.BcObjects){
+                Console.WriteLine("Titulo: " + obj.Value);
+                Console.WriteLine("Descripcion: " + obj.Description);
+                Console.WriteLine("Caracteristicas: ");
+                foreach(string prop in obj.Props)
+                {
+                    Console.WriteLine(" : " + prop);
+                }
+                Console.WriteLine(" ");
+            }
+
+            Console.WriteLine("\nPresione ENTER para Continuar...");
+            Console.ReadLine().ToLower();
+        }
+
+
         public int QueryObjects()
         {
             this.RefusedProps = new List<string>();
