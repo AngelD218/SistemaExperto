@@ -19,7 +19,6 @@ namespace SistemaExperto
         private List<string> AprovedProps = new List<string>();
         static void Main(string[] args)
         {
-          
             int option = 0;
             Program program = new Program();
 
@@ -39,12 +38,6 @@ namespace SistemaExperto
                         Console.WriteLine("Consultar al SE");
                         program.QueryObjects();
                         break;
-                    case 3:
-                        Console.WriteLine("Sistema Experto");
-                        break;
-                    case 4:
-                        Console.WriteLine("Sistema Experto");
-                        break;
                     case 5:
                         Console.WriteLine("Salir");
                         Environment.Exit(0);
@@ -59,8 +52,8 @@ namespace SistemaExperto
         public int ShowMenu()
         {
             Console.Clear();
-            Console.WriteLine("Sistema Experto");
-            Console.WriteLine(" \n 1.Ver Objetos de la BC \n 2.Consultar al SE \n 3.Guardar la BC \n 4.Usar una BC existente \n 5.Salir ");
+            Console.WriteLine("Bienvenido a MovieNator! ");
+            Console.WriteLine(" \n 1.Ver todas las sugerencias \n 2.Recomiendame algo para ver \n 5.Salir ");
             int option = Convert.ToInt32(Console.ReadLine());
             return option;
         }
@@ -80,7 +73,6 @@ namespace SistemaExperto
                         Console.WriteLine(line[0]);
                     }
                 }
-                Console.WriteLine("Ya esta");
             }catch(Exception ex)
             {
                 Console.WriteLine(ex.Message);
@@ -142,11 +134,13 @@ namespace SistemaExperto
             this.RefusedProps = new List<string>();
             this.AprovedProps = new List<string>();
             string response = "";
+            string question = "Quieres ver ";
             bool containsRefusedProp;
             bool containsAprovedProp;
             bool firstsAsk = true;
             bool foundObject = false;
             int aprovedProps;
+            int propsCounter = 0;
             string instructions;
 
             foreach (BCObject obj in BcObjects)
@@ -155,20 +149,7 @@ namespace SistemaExperto
                 containsAprovedProp = true;
                 aprovedProps = 0;
 
-                if (foundObject == true)
-                {
-                    Console.WriteLine("\nExisten otras soluciones, desea continuar la busqueda? \nIngresa 's' para continuar la busqueda, cualquier otra tecla para salir...");
-                    response = Console.ReadLine().ToLower();
-                    if (response != "s")
-                    {
-                        break;
-                    }
-                    else
-                    {
-                        foundObject = false;
-                    }
-                }
-
+                
                 #region search for refused props
                 foreach (string refusedProp in this.RefusedProps)
                 {
@@ -199,10 +180,24 @@ namespace SistemaExperto
                 }
                 #endregion
 
+                if (foundObject == true)
+                {
+                    Console.WriteLine("\nExisten otras sugerencias, deseas continuar la busqueda? \nIngresa 's' para continuar la busqueda, cualquier otra tecla para salir...");
+                    response = Console.ReadLine().ToLower();
+                    if (response != "s")
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        foundObject = false;
+                    }
+                }
+
+                propsCounter = 0;
                 foreach (string prop in obj.Props)
                 {
-                    
-
+                    propsCounter++;
                     response = "";
                     if (this.AprovedProps.Contains(prop))
                     {
@@ -214,7 +209,19 @@ namespace SistemaExperto
 
                     while (response != "s" && response != "n")
                     {
-                        Console.WriteLine("Es " + prop + "?");
+                        if(propsCounter == 6)
+                        {
+                            question = "Quieres ver a ";
+                        }else if(propsCounter == 4 || propsCounter == 5)
+                        {
+                            question = "Quieres ver algo del genero ";
+                        }
+                        else
+                        {
+                            question = "Quieres ver ";
+                        }
+
+                        Console.WriteLine(question + prop + "?");
                         Console.WriteLine(instructions);
                         response = Console.ReadLine().ToLower();
 
@@ -241,14 +248,14 @@ namespace SistemaExperto
                 if(aprovedProps == obj.Props.Count())
                 {
                     foundObject = true;
-                    Console.WriteLine("El objeto buscado es: " + obj.Value + "\nPresione ENTER para Continuar...");
+                    Console.WriteLine("Te recomendamos ver: " + obj.Value + "\nSinopsis: "+ obj.Description +" \nPresione ENTER para Continuar...");
                     Console.ReadLine().ToLower();
                 }                    
             }
 
             if (!foundObject)
             {
-                Console.WriteLine("No se encontro el objeto  \nPresione ENTER para Continuar...");
+                Console.WriteLine("No se encontro ninguna sugerencia adecuada para tus gustos de hoy  \nPresione ENTER para Continuar...");
                 response = Console.ReadLine().ToLower();
             }
             return 1;
@@ -258,10 +265,10 @@ namespace SistemaExperto
         {
             string response = "s";
 
-            Console.WriteLine("Se asume que el resultado es " + obj.Value);
+            Console.WriteLine("Se asume que quieres ver " + obj.Value);
             if(this.AprovedProps.Count() > 0)
             {
-                Console.WriteLine("Porque es : ");
+                Console.WriteLine("Porque aceptaste sugerencias como : ");
                 foreach(string aprovedProp in this.AprovedProps)
                 {
                     Console.WriteLine(" - " + aprovedProp);
@@ -269,7 +276,7 @@ namespace SistemaExperto
             }
             if(this.RefusedProps.Count() > 0)
             {
-                Console.WriteLine("Y porque NO es : ");
+                Console.WriteLine("Y rechazaste : ");
                 foreach (string refusedProp in this.RefusedProps)
                 {
                     Console.WriteLine(" - " + refusedProp);
